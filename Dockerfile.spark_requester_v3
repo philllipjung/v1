@@ -1,0 +1,22 @@
+# Build stage
+FROM golang:1.26-alpine AS builder
+
+WORKDIR /build
+
+# Copy source code
+COPY spark_requester_v3.go ./
+
+# Initialize go module and build
+RUN go mod init spark_requester_v3 && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags="-w -s" -o spark_requester_v3 .
+
+# Runtime stage
+FROM alpine:3.19
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /build/spark_requester_v3 .
+
+# Run the binary
+ENTRYPOINT ["./spark_requester_v3"]

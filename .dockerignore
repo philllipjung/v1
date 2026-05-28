@@ -1,0 +1,23 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+
+# Test files
+test_*.go
+
+# Build artifacts
+yunikorn-exporter
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

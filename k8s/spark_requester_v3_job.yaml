@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spark-requester-v3
+  namespace: default
+spec:
+  backoffLimit: 0  # 실패 시 재시도하지 않음
+  template:
+    metadata:
+      labels:
+        app: spark-requester-v3
+    spec:
+      restartPolicy: Never  # Job이 한 번만 실행되고 종료
+      serviceAccountName: hynix-service  # In-cluster config를 위해 필요
+      containers:
+      - name: spark-requester-v3
+        image: spark-requester-v3:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        # KUBERNETES_SERVICE_HOST는 Kubernetes가 자동으로 설정
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"

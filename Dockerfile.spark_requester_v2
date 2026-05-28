@@ -1,0 +1,28 @@
+FROM golang:1.26-alpine AS builder
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY spark_requester_v2.go ./
+
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o spark-requester-v2 spark_requester_v2.go
+
+# Final stage
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy the binary from builder
+COPY --from=builder /app/spark-requester-v2 .
+
+# Copy kubeconfig files (if needed for local testing)
+# These will be mounted or embedded in production
+
+ENTRYPOINT ["./spark-requester-v2"]

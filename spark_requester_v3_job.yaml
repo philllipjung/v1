@@ -1,0 +1,12 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spark-requester-v3
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: spark-requester
+        image: spark-requester-v3:latest
+        imagePullPolicy: Never

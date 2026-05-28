@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-app-exporter
+  namespace: default
+  labels:
+    app: spark-app-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-app-exporter
+  template:
+    metadata:
+      labels:
+        app: spark-app-exporter
+    spec:
+      serviceAccountName: spark-app-exporter
+      containers:
+      - name: exporter
+        image: spark-app-exporter:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 9300
+          name: metrics
+        env:
+        - name: WATCH_NAMESPACES
+          value: "default"
+        - name: SPARK_ENABLED
+          value: "true"
+        - name: YUNIKORN_ENABLED
+          value: "true"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spark-app-exporter
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: spark-app-exporter
+rules:
+- apiGroups:
+  - sparkoperator.k8s.io
+  resources:
+  - sparkapplications
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: spark-app-exporter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: spark-app-exporter
+subjects:
+- kind: ServiceAccount
+  name: spark-app-exporter
+  namespace: default
